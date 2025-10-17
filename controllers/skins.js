@@ -21,7 +21,7 @@ router.post('/', verifyToken, async(req, res) => {
     } else if(wearLevel <= 0.45) {
       wearLevel = 'Well Worn';
     } else wearLevel = 'Battle Scarred';
-
+    
     req.body.owner = req.user._id;
     const weapon = await UserWeapon.create({
       weapon: weaponNew._id,
@@ -30,11 +30,80 @@ router.post('/', verifyToken, async(req, res) => {
       wearLevel: wearLevel,
       owner: req.user._id,
     });
+
     res.status(201).json(weapon);
   } catch(err) {
     res.status(500).json({err: err.message});
   }
 });
 
+
+router.get('/', verifyToken, async(req, res) => {
+  try {
+    const userWeapons = await UserWeapon.find({ })
+      .populate('weapon')
+      .populate('owner');
+
+    res.status(200).json(userWeapons);
+  } catch(err) {
+    res.status(500).json({err: err.message});
+  }
+});
+
+router.get('/:skinId', verifyToken, async(req, res) => {
+  try {
+    const skin = await UserWeapon.findById(req.params.skinId)
+      .populate('weapon')
+      .populate('owner');
+
+    res.status(200).json(skin);
+  } catch(err) {
+    res.status(500).json({err: err.message});
+  }
+});
+
+router.get('/user/:userId', verifyToken, async (req, res) => {
+  try {
+    const userWeapons = await UserWeapon.find({ owner: req.params.userId })
+      .populate('weapon')
+      .populate('owner'); 
+
+    res.status(200).json(userWeapons);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.put('/:skinId', verifyToken, async(req, res) => {
+  try {
+    const skin = await UserWeapon.findById(req.params.skinId);
+    if(!skin.owner.equals(req.user._id)){
+      return res.status(403).send('access denied');
+    }
+
+    skin.price = req.body.price;
+    await skin.save();
+    const updatedSkin = await skin.populate('weapon owner');
+    res.status(200).json(updatedSkin);
+  } catch(err){
+    res.status(500).json({err: err.message});
+  }
+});
+
+router.delete('/:skinId', verifyToken, async(req, res) => {
+  try {
+    const skin = await UserWeapon.findById(req.params.skinId);
+    if(!skin.owner.equals(req.user._id)){
+      return res.status(403).send('access denied');
+    }
+
+    const deletedSkin = await UserWeapon.findByIdAndDelete(req.params.skinId)
+      .populate('weapon')
+      .populate('owner');
+    res.status(200).json({ message: 'Deleted successfully', deletedSkin });
+  } catch(err) {
+    res.status(500).json({err: err.message});
+  }
+});
 
 module.exports = router;

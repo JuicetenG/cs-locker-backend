@@ -74,6 +74,15 @@ router.get('/user/:userId', verifyToken, async (req, res) => {
   }
 });
 
+router.get('/weapons/data', verifyToken, async(req, res) => {
+  try {
+    const allWeapons = await Weapon.find({ });
+    res.status(200).json(allWeapons);
+  } catch(err) {
+    res.status(500).json({err: err.message});
+  }
+});
+
 router.put('/:skinId', verifyToken, async(req, res) => {
   try {
     const skin = await UserWeapon.findById(req.params.skinId);

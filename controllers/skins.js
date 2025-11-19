@@ -50,12 +50,13 @@ router.get('/', verifyToken, async(req, res) => {
   }
 });
 
+
 router.get('/:skinId', verifyToken, async(req, res) => {
   try {
     const skin = await UserWeapon.findById(req.params.skinId)
-      .populate('weapon')
-      .populate('owner');
-
+    .populate('weapon')
+    .populate('owner');
+    
     res.status(200).json(skin);
   } catch(err) {
     res.status(500).json({err: err.message});
@@ -65,9 +66,9 @@ router.get('/:skinId', verifyToken, async(req, res) => {
 router.get('/user/:userId', verifyToken, async (req, res) => {
   try {
     const userWeapons = await UserWeapon.find({ owner: req.params.userId })
-      .populate('weapon')
-      .populate('owner'); 
-
+    .populate('weapon')
+    .populate('owner'); 
+    
     res.status(200).json(userWeapons);
   } catch (err) {
     res.status(500).json({ error: err.message });
